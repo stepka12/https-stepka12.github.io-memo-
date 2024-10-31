@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра для запоминания</title>
+    <style> 
+    
+        @media (max-width: 768px) {
+            .cards {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            .card {
+                height: 70px;
+                width: 70px;
+                font-size: 18px;
+            }
+            .game-container {
+                max-width: 400px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .cards {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+                margin: 10px;
+            }
+            .card {
+                height: 60px;
+                width: 60px;
+                font-size: 16px;
+            }
+            .game-container {
+                max-width: 300px;
+            }
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin: 20px;
+        }
+        .card {
+            height: 80px;
+            width: 80px;
+            background-color: #3498db;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        .card-content {
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .card.flipped .card-content {
+            opacity: 1;
+        }
+        @keyframes cardFlip {
+            0% { transform: rotateY(0deg); }
+            100% { transform: rotateY(180deg); }
+        }
+        .card.flipped {
+            animation: cardFlip 0.3s forwards;
+        }
+
+        .game-container {
+            max-width: 600px;
+            margin: 20px auto;
+            text-align: center;
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px;
+        }
+        .card {
+            height: 100px;
+            background-color: #3498db;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+        .card.flipped {
+            background-color: #2ecc71;
+        }
+        .card.matched {
+            background-color: #27ae60;
+            cursor: default;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Игра для запоминания</h1>
+        <button onclick="startGame()">Начать новую игру</button>
+        <div class="cards" id="gameBoard"></div>
+    </div>
+
+    <script>
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+
+        const symbols = ['🌟', '🎈', '🎨', '🎭', '🎪', '🎯', '🎲', '🎮'];
+
+        function startGame() {
+            matchedPairs = 0;
+            cards = [...symbols, ...symbols]
+                .sort(() => Math.random() - 0.5)
+                .map((symbol, index) => ({
+                    id: index,
+                    symbol: symbol,
+                    isFlipped: false,
+                    isMatched: false
+                }));
+            
+            renderBoard();
+        }
+
+        function renderBoard() {
+            const gameBoard = document.getElementById('gameBoard');
+            gameBoard.innerHTML = '';
+            
+            cards.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.className = `card ${card.isFlipped || card.isMatched ? 'flipped' : ''}`;
+                cardElement.onclick = () => flipCard(card.id);
+                cardElement.innerHTML = card.isFlipped || card.isMatched ? card.symbol : '';
+                gameBoard.appendChild(cardElement);
+            });
+        }
+
+        function flipCard(cardId) {
+            const card = cards.find(c => c.id === cardId);
+            
+            if (card.isMatched || card.isFlipped || flippedCards.length === 2) return;
+            
+            card.isFlipped = true;
+            flippedCards.push(card);
+            
+            renderBoard();
+            
+            if (flippedCards.length === 2) {
+                setTimeout(checkMatch, 1000);
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            
+            if (card1.symbol === card2.symbol) {
+                card1.isMatched = true;
+                card2.isMatched = true;
+                matchedPairs++;
+                
+                if (matchedPairs === symbols.length) {
+                    alert('Поздравляем! Вы выиграли!');
+                }
+            } else {
+                card1.isFlipped = false;
+                card2.isFlipped = false;
+            }
+            
+            flippedCards = [];
+            renderBoard();
+        }
+
+        // Запускаем игру при загрузке страницы
+        startGame();
+    </script>
+</body>
+</html>
